@@ -928,6 +928,7 @@ function checker:run_single_check(ip, port, hostname, hostheader)
   local request = ("GET %s HTTP/1.0\r\n%sHost: %s\r\n\r\n"):format(path, headers, hostheader or hostname or ip)
   self:log(DEBUG, "request head: ", request)
 
+  sock:settimeout(self.checks.active.timeout * 1000)
   local bytes
   bytes, err = sock:send(request)
   if not bytes then
@@ -939,6 +940,7 @@ function checker:run_single_check(ip, port, hostname, hostheader)
     return self:report_tcp_failure(ip, port, hostname, "send", "active")
   end
 
+  sock:settimeout(self.checks.active.timeout * 1000)
   local status_line
   status_line, err = sock:receive()
   if not status_line then
@@ -1004,11 +1006,11 @@ function checker:active_check_targets(list)
   -- hand out work-packages to the threads, note the "-1" because this timer
   -- thread will handle the last package itself.
   local threads = {}
-  for i = 1, #work_packages - 1 do
+  for i = 1, #work_packages do
     threads[i] = ngx.thread.spawn(self.run_work_package, self, work_packages[i])
   end
   -- run last package myself
-  self:run_work_package(work_packages[#work_packages])
+  -- self:run_work_package(work_packages[#work_packages])
 
   -- wait for everybody to finish
   for _, thread in ipairs(threads) do
