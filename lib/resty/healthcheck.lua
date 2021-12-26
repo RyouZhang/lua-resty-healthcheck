@@ -1006,11 +1006,11 @@ function checker:active_check_targets(list)
   -- hand out work-packages to the threads, note the "-1" because this timer
   -- thread will handle the last package itself.
   local threads = {}
-  for i = 1, #work_packages do
+  for i = 1, #work_packages-1 do
     threads[i] = ngx.thread.spawn(self.run_work_package, self, work_packages[i])
   end
   -- run last package myself
-  -- self:run_work_package(work_packages[#work_packages])
+  self:run_work_package(work_packages[#work_packages])
 
   -- wait for everybody to finish
   for _, thread in ipairs(threads) do
